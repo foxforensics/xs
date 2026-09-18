@@ -1,3 +1,3 @@
-module go.foxforensics.eu/go-template
+module go.foxforensics.eu/xs
 
 go 1.26

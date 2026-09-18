@@ -1,29 +1,50 @@
-// go-template.
+// Experimental strings carver.
 //
 // Usage:
 //
-//	go-template arg
-//
-// The arguments are:
-//
-//	arg
-//	    Argument (required).
+//	cat FILE | xs | uniq | sort > out.txt
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 )
 
-var Usage = `© 2026 Fox Forensics. Licensed under MIT License.
-Usage: go-template ARG
-
-Report bugs at: foxforensics.eu/issues
-`
-
 func main() {
-	if len(os.Args) == 1 || os.Args[1] == "--help" {
-		_, _ = fmt.Fprint(os.Stderr, Usage)
-		os.Exit(2)
+	var sb strings.Builder
+
+	flush := func() {
+		if len(strings.TrimSpace(sb.String())) >= 3 {
+			fmt.Println(sb.String())
+		}
+		sb.Reset()
+	}
+
+	defer func() {
+		if err := recover(); err != nil {
+			_, _ = fmt.Fprintln(os.Stderr, "xs:", err)
+			os.Exit(1)
+		}
+	}()
+
+	defer flush()
+
+	r := bufio.NewReader(os.Stdin)
+
+	for {
+		b, err := r.ReadByte()
+
+		if err == io.EOF {
+			break
+		}
+
+		if 0x19 < b && b < 0x7F {
+			sb.WriteByte(b)
+		} else {
+			flush()
+		}
 	}
 }
